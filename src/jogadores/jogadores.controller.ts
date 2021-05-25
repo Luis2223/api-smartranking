@@ -1,32 +1,45 @@
-import { Controller, Post, Body, Get, Query, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, Delete, UsePipes, ValidationPipe, Param, Put } from '@nestjs/common';
 import { CreatePlayerDto } from './dtos/create-player.dto';
 import { JogadoresService } from './jogadores.service';
 import { Jogador } from './interfaces/jogador.interface';
+import { JogadoresValidateParameter } from './pipes/jogadores-validate-parameter.pipe';
+import { UpdatePlayerDto } from './dtos/update-player.dto';
 @Controller('api/v1/jogadores')
 export class JogadoresController {
 
   constructor(private readonly jogadoresService: JogadoresService) {}
 
   @Post()
-  async criarAtualizarJogador(
+  @UsePipes(ValidationPipe)
+  async criarJogador(
     @Body() createPlayerDto: CreatePlayerDto
-  ) {
-    await this.jogadoresService.criarAtualizarJogador(createPlayerDto)
+  ): Promise<Jogador> {
+    return await this.jogadoresService.createPlayer(createPlayerDto)
+  }
+
+  @Put('/:_id')
+  @UsePipes(ValidationPipe)
+  async atualizarJogador(
+    @Body() updatePlayerDto: UpdatePlayerDto,
+    @Param('_id', JogadoresValidateParameter) _id: string
+  ): Promise<void> {
+    await this.jogadoresService.updatePlayer(_id, updatePlayerDto)
   }
 
   @Get()
-  async consultarJogadores(
-    @Query('email') email: string
-  ): Promise<Jogador[] | Jogador> {  
-    if (email) {
-      return await this.jogadoresService.consultarJogadoresPeloEmail(email);
-    }
+  async consultarJogadores(): Promise<Jogador[]> {  
     return await this.jogadoresService.consultarTodosJogadores();
   }
 
+  @Get('/:_id')
+  async consultarJogadorPeloIp(
+    @Param('_id', JogadoresValidateParameter) _id: string
+  ): Promise<Jogador> {  
+      return await this.jogadoresService.searchPlayerForId(_id);
+  }
 
-  @Delete()
-  async deletarJogador(@Query('email') email: string): Promise<void> {
-    this.jogadoresService.deletarJogador(email)
+  @Delete('/:_id')
+  async deletarJogador(@Param('_id', JogadoresValidateParameter) _id: string): Promise<void> {
+    this.jogadoresService.removePlayer(_id)
   }
 }
