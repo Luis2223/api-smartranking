@@ -42,4 +42,11 @@ export class CategoriasController {
     ): Promise<void> {
         await this.categoriasService.updateCategory(categoria, updateCategoryDto);
     }
+
+    @Post('/:categoria/jogadores/:idJogador')
+    async addCategoryPlayer(
+        @Param() params: string[]
+    ): Promise<void> {
+        return await this.categoriasService.addCategoryPlayer(params);
+    }
 }
