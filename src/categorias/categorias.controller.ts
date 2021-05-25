@@ -3,7 +3,6 @@ import { CategoriasService } from './categorias.service';
 import { CreateCategoryDto } from './dtos/create-category.dto';
 import { UpdateCategoryDto } from './dtos/update-category.dto';
 import { Categoria } from './interface/categoria.interface';
-import { CategoriasValidateParameter } from './pipes/categorias-validate-parameter.pipes';
 
 @Controller('api/v1/categorias')
 export class CategoriasController {
