@@ -67,4 +67,8 @@ export class CategoriasService {
         categoryExists.jogadores.push(idJogador);
         await this.categoriaModel.findOneAndUpdate({ categoria }, { $set: categoryExists }).exec();
     }
+
+    async searchCategoryToPlayer(idJogador: any): Promise<Categoria> {
+        return await this.categoriaModel.findOne().where('jogadores').in(idJogador).exec();
+    }
 }
