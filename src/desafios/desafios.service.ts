@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { CategoriasService } from 'src/categorias/categorias.service';
 import { JogadoresService } from 'src/jogadores/jogadores.service';
 import { CreateChallengeDto } from './dtos/create-challenge.dto';
+import { UpdateChallengeDto } from './dtos/update-challenge.dto';
 import { DesafioStatus } from './interfaces/desafio-status.enum';
 import { Desafio } from './interfaces/desafio.interface';
 
@@ -43,6 +44,50 @@ export class DesafiosService {
         challengeCreate.status = DesafioStatus.PENDENTE;
 
         return await challengeCreate.save();
+    }
+
+    async searchAllChallenge(): Promise<Array<Desafio>> {
+        return await this.desafioModel.find()
+        .populate('solicitante')
+        .populate('jogadores')
+        .populate('partida')
+        .exec();
+    }
+
+    async searchChallengeForId(_id: any): Promise<Array<Desafio>> {
+        const players = await this.jogadoresService.consultarTodosJogadores();
+
+        const playersFound = players.filter(player => player._id == _id);
+
+        if (playersFound.length == 0) {
+            throw new BadRequestException(`Player ${_id} not register.`)
+        }
+
+        return await this.desafioModel.find()
+        .populate('solicitante')
+        .populate('jogadores')
+        .populate('partida')
+        .where('jogadores')
+        .in(_id)
+        .exec()
+    }
+
+    async updateChallenge(_id: string, updateChallengeDto: UpdateChallengeDto): Promise<void> {
+        const challengeExists = await this.desafioModel.findById(_id).exec();
+
+        if (!challengeExists) {
+            throw new NotFoundException(`Challenge ${_id} is not found.`)
+        }
+
+        if (updateChallengeDto.status) {
+            challengeExists.dataHoraResposta = new Date();
+        }
+        challengeExists.status = updateChallengeDto.status;
+        challengeExists.dataHoraDesafio = updateChallengeDto.dataHoraDesafio
+
+        await this.desafioModel.findOneAndUpdate({ _id }, {
+            $set: challengeExists
+        }).exec()
     }
 
 }
